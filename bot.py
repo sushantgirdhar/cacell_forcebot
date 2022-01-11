@@ -1,6 +1,6 @@
 import logging
 from pyrogram import Client
-from Config import Config
+from config import Config
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,7 +13,7 @@ plugins = dict(
 )
 
 app = Client(
-     'ForceSubscribeRobot',
+     'ForceSubscribe',
       bot_token = Config.BOT_TOKEN,
       api_id = Config.APP_ID,
       api_hash = Config.API_HASH,
