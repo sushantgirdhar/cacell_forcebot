@@ -1,136 +1,24 @@
 import logging
-import os
-from Config import Messages as tr
-from Config import Config as C
+from config import Messages as tr
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, UsernameNotOccupied, ChatAdminRequired, PeerIdInvalid
-UPDATES_CHANNEL = C.UPDATES_CHANNEL
+
 logging.basicConfig(level=logging.INFO)
 
-@Client.on_message(filters.incoming & filters.command(['start', 'start@ForceSubscriber_UBot']))
+@Client.on_message(filters.private & filters.incoming & filters.command(['start']))
 def _start(client, message):
-    update_channel = UPDATES_CHANNEL
-    if update_channel:
-        try:
-            user = client.get_chat_member(update_channel, message.chat.id)
-            if user.status == "kicked":
-               client.send_message(
-                   chat_id=message.chat.id,
-                   text="Sorry Sir, You are Banned to use me. Contact my [Support Group](https://t.me/ebruiser).",
-                   parse_mode="markdown",
-                   disable_web_page_preview=True
-               )
-               return
-        except UserNotParticipant:
-            client.send_message(
-                chat_id=message.chat.id,
-                text="**Please Join My Updates Channel to use this Bot!**",
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton("Join Updates Channel", url=f"https://t.me/{update_channel}")
-                        ]
-                    ]
-                ),
-                parse_mode="markdown"
-            )
-            return
-        except Exception:
-            client.send_message(message.chat.id,
-                text=tr.START_MSG.format(message.from_user.first_name, message.from_user.id),
-	        reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                           InlineKeyboardButton("Join Updates Channel", url="https://t.me/ebruiser"),
-                           InlineKeyboardButton("Support Group", url="https://t.me/ebruiser")
-                      ],
-                     [
-                           InlineKeyboardButton("🧑‍💻Devloper🧑‍💻", url="https://t.me/ebruiser")
-                     ]
-                 ]
-             ),
-        parse_mode="markdown",
-        reply_to_message_id=message.message_id
-        )
-            return
     client.send_message(message.chat.id,
         text=tr.START_MSG.format(message.from_user.first_name, message.from_user.id),
-	reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Join Channel", url="https://t.me/ebruiser"),
-                    InlineKeyboardButton("Contact Admin", url="https://t.me/ebruiser")
-                ],
-                [
-                    InlineKeyboardButton("🧑‍💻Devloper🧑‍💻", url="https://t.me/SushantG")
-                ]
-            ]
-        ),
         parse_mode="markdown",
         reply_to_message_id=message.message_id
         )
 
 
-@Client.on_message(filters.incoming & filters.command(['source_code', 'source_code@ForceSubscriber_UBot']))
-def _source_code(client, message):
-    client.send_message(message.chat.id,
-        text=tr.SC_MSG.format(message.from_user.first_name, message.from_user.id),
-	reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Souce Code", url="tg://need_update_for_some_feature")
-                ],
-                [
-                    InlineKeyboardButton("Join Channel", url="https://t.me/ebruiser"),
-                    InlineKeyboardButton("Contact Admin", url="https://t.me/ebruiser")
-                ],
-                [
-                    InlineKeyboardButton("🧑‍💻Devloper🧑‍💻", url="https://t.me/SushantG")
-                ]
-            ]
-        ),
-        parse_mode="markdown",
-        reply_to_message_id=message.message_id
-        )
-
-@Client.on_message(filters.incoming & filters.command(['help', 'help@ForceSubscriber_UBot']))
+@Client.on_message(filters.private & filters.incoming & filters.command(['help']))
 def _help(client, message):
-    update_channel = UPDATES_CHANNEL
-    if update_channel:
-        try:
-            user = client.get_chat_member(update_channel, message.chat.id)
-            if user.status == "kicked":
-               client.send_message(
-                   chat_id=message.chat.id,
-                   text="Sorry Sir, You are Banned to use me. Contact my [Support Group](https://t.me/cacell).",
-                   parse_mode="markdown",
-                   disable_web_page_preview=True
-               )
-               return
-        except UserNotParticipant:
-            client.send_message(
-                chat_id=message.chat.id,
-                text="**Please Join My Updates Channel to use this Bot!**",
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton("Join Updates Channel", url=f"https://t.me/{update_channel}")
-                        ]
-                    ]
-                ),
-                parse_mode="markdown"
-            )
-            return
-        except Exception:
-            client.send_message(
-                chat_id=message.chat.id,
-                text="Hey use this command in my pm. \nFor more help ask in my [Support Group](https://t.me/ebruiser).",
-                parse_mode="markdown",
-                disable_web_page_preview=True)
-            return
     client.send_message(chat_id = message.chat.id,
         text = tr.HELP_MSG[1],
+        parse_mode="markdown",
         disable_notification = True,
         reply_markup = InlineKeyboardMarkup(map(1)),
         reply_to_message_id = message.message_id
@@ -151,17 +39,20 @@ def help_answer(client, callback_query):
 def map(pos):
     if(pos==1):
         button = [
-            [InlineKeyboardButton(text = '-->', callback_data = "help+2")]
+            [InlineKeyboardButton(text = '▶️', callback_data = "help+2")]
         ]
     elif(pos==len(tr.HELP_MSG)-1):
+        url = "https://github.com/DamienSoukara/FSub-Heroku"
         button = [
-            [InlineKeyboardButton(text = '<--', callback_data = f"help+{pos-1}")]
+            [InlineKeyboardButton(text = '🗣 Support Chat', url="https://t.me/damienhelp")],
+            [InlineKeyboardButton(text = '🤖 Source Code', url=url)],
+            [InlineKeyboardButton(text = '◀️', callback_data = f"help+{pos-1}")]
         ]
     else:
         button = [
             [
-                InlineKeyboardButton(text = '<--', callback_data = f"help+{pos-1}"),
-                InlineKeyboardButton(text = '-->', callback_data = f"help+{pos+1}")
+                InlineKeyboardButton(text = '◀️', callback_data = f"help+{pos-1}"),
+                InlineKeyboardButton(text = '▶️', callback_data = f"help+{pos+1}")
             ],
         ]
     return button

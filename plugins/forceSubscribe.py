@@ -1,6 +1,6 @@
 import time
 import logging
-from Config import Config
+from config import Config
 from pyrogram import Client, filters
 from sql_helpers import forceSubscribe_sql as sql
 from pyrogram.types import ChatPermissions, InlineKeyboardMarkup, InlineKeyboardButton
@@ -46,38 +46,38 @@ def _check_member(client, message):
     if not client.get_chat_member(chat_id, user_id).status in ("administrator", "creator") and not user_id in Config.SUDO_USERS:
       channel = chat_db.channel
       if channel.startswith("-"):
-          channel_url = client.export_chat_invite_link(int(channel))
+          url = client.export_chat_invite_link(int(channel))
       else:
-          channel_url = f"https://t.me/{channel}"
+          url = f"https://t.me/{channel}"
       try:
         client.get_chat_member(channel, user_id)
       except UserNotParticipant:
         try:
           sent_message = message.reply_text(
-              " Hey 👋 {} You Are Welcomed Here For Asking Any Study Related Queries . But You Aren't  Subscribed To Our @{} Yet.**\n\n💁‍♂So You Have Been Muted, please join @{} & Follow Steps To  UnMute Yourself. \n\n**➠●First, Join Our Channel : [Channel](https://t.me/{})  \n**➠●After Joining . Click Below button 👇 ( **Unmute me ) 👇.**".format(message.from_user.mention, channel, channel, channel),
+              f"Hi {message.from_user.mention}, You Are **Not Subscribed** To My [Channel]({url}) Yet. Please 👉 [Join]({url}) And **Press The Button Below** 👇 To Unmute Yourself..",
               disable_web_page_preview=True,
-             reply_markup=InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("Subscribe My Channel", url=channel_url)
-                ],
-                [
-                    InlineKeyboardButton("UnMute Me", callback_data="onUnMuteRequest")
-                ]
-            ]
-        )
-          )
+              reply_markup=InlineKeyboardMarkup(
+             [
+                 [
+                     InlineKeyboardButton("💬 Subscribe", url=url)
+                 ],
+                 [
+                     InlineKeyboardButton("🔕 UnMute Me", callback_data="onUnMuteRequest")
+                 ]
+             ]
+         )
+           )
           client.restrict_chat_member(chat_id, user_id, ChatPermissions(can_send_messages=False))
         except ChatAdminRequired:
           sent_message.edit("❗ **I am not an admin here.**\n__Make me admin with ban user permission and add me again.\n#Leaving this chat...__")
           client.leave_chat(chat_id)
       except ChatAdminRequired:
-        client.send_message(chat_id, text=f"❗ **I am not an admin in [channel]({channel_url})**\n__Make me admin in the channel and add me again.\n#Leaving this chat...__")
+        client.send_message(chat_id, text=f"❗ **I am not an admin in [channel]({url})**\n__Make me admin in the channel and add me again.\n#Leaving this chat...__")
         client.leave_chat(chat_id)
 
 
-@Client.on_message(filters.command(["forcesubscribe", "fsub", "fsub@ForceSubscriber_UBot", "forcesubscribe@ForceSubscriber_UBot"]) & ~filters.private)
-def config(client, message):
+@Client.on_message(filters.command(["forcesubscribe", "fsub"]) & ~filters.private)
+def fsub(client, message):
   user = client.get_chat_member(message.chat.id, message.from_user.id)
   if user.status is "creator" or user.user.id in Config.SUDO_USERS:
     chat_id = message.chat.id
@@ -102,12 +102,12 @@ def config(client, message):
           client.get_chat_member(input_str, "me")
           sql.add_channel(chat_id, input_str)
           if input_str.startswith("-"):
-              channel_url = client.export_chat_invite_link(int(input_str))
+              url = client.export_chat_invite_link(int(input_str))
           else:
-              channel_url = f"https://t.me/{input_str}"
-          message.reply_text(f"✅ **Force Subscribe is Enabled**\n__Force Subscribe is enabled, all the group members have to subscribe this [channel]({channel_url}) in order to send messages in this group.__", disable_web_page_preview=True)
+              url = f"https://t.me/{input_str}"
+          message.reply_text(f"✅ **Force Subscribe is Enabled**\n__Force Subscribe is enabled, all the group members have to subscribe this [channel]({url}) in order to send messages in this group.__", disable_web_page_preview=True)
         except UserNotParticipant:
-          message.reply_text(f"❗ **Not an Admin in the Channel**\n__I am not an admin in the [channel]({channel_url}). Add me as a admin in order to enable ForceSubscribe.__", disable_web_page_preview=True)
+          message.reply_text(f"❗ **Not an Admin in the Channel**\n__I am not an admin in the [channel]({url}). Add me as a admin in order to enable ForceSubscribe.__", disable_web_page_preview=True)
         except (UsernameNotOccupied, PeerIdInvalid):
           message.reply_text(f"❗ **Invalid Channel Username/ID.**")
         except Exception as err:
@@ -116,10 +116,10 @@ def config(client, message):
       if sql.fs_settings(chat_id):
         my_channel = sql.fs_settings(chat_id).channel
         if my_channel.startswith("-"):
-            channel_url = client.export_chat_invite_link(int(input_str))
+            url = client.export_chat_invite_link(int(input_str))
         else:
-            channel_url = f"https://t.me/{my_channel}"
-        message.reply_text(f"✅ **Force Subscribe is enabled in this chat.**\n__For this [Channel]({channel_url})__", disable_web_page_preview=True)
+            url = f"https://t.me/{my_channel}"
+        message.reply_text(f"✅ **Force Subscribe is enabled in this chat.**\n__For this [Channel]({url})__", disable_web_page_preview=True)
       else:
         message.reply_text("❌ **Force Subscribe is disabled in this chat.**")
   else:
