@@ -9,7 +9,7 @@
     "Group",
     "Channel"
   ],
-  "repository": "https://github.com/DamienSoukara/FSub-Heroku",
+  "repository": "https://github.com/sushantgirdhar/cacell_forcebot",
   "website": "AmineSoukara.me",
   "success_url": "t.me/ForceSubscribeRobot",
   "env": {
